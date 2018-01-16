@@ -1,0 +1,129 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "logicAppName": {
+      "type": "String"
+    },
+    "logicAppDefinition": {
+      "defaultValue": {
+        "contentVersion": "1.0.0.0",
+        "parameters": {},
+        "actions": {},
+        "triggers": {},
+        "outputs": {},
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#"
+      },
+      "type": "Object"
+    },
+    "diagnosticSettingName01": {
+      "type": "String",
+      "metadata": {
+        "description": "Name of the first diagnostic setting."
+      }
+    },
+    "diagnosticSettingName02": {
+      "type": "String",
+      "metadata": {
+        "description": "Name of the second diagnostic setting."
+      }
+    },
+    "workspaceId01": {
+      "type": "String",
+      "metadata": {
+        "description": "Resource Id of OMS workspace used in first diagnostic setting."
+      }
+    },
+    "workspaceId02": {
+      "type": "String",
+      "metadata": {
+        "description": "Resource Id of OMS workspace used in second diagnostic setting."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Logic/workflows",
+      "name": "[parameters('logicAppName')]",
+      "apiVersion": "2016-10-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "definition": "[parameters('logicAppDefinition')]",
+        "parameters": {},
+        "state": "Enabled"
+      },
+      "resources": [
+        {
+          "type": "providers/diagnosticSettings",
+          "name": "[concat('Microsoft.Insights/', parameters('diagnosticSettingName01'))]",
+          "apiVersion": "2017-05-01-preview",
+          "properties": {
+            "name": "[parameters('diagnosticSettingName01')]",
+            "storageAccountId": null,
+            "eventHubAuthorizationRuleId": null,
+            "eventHubName": null,
+            "workspaceId": "[parameters('workspaceId01')]",
+            "logs": [
+              {
+                "category": "WorkflowRuntime",
+                "enabled": true,
+                "retentionPolicy": {
+                  "days": 0,
+                  "enabled": false
+                }
+              }
+            ],
+            "metrics": [
+              {
+                "timeGrain": "PT1M",
+                "enabled": true,
+                "retentionPolicy": {
+                  "enabled": false,
+                  "days": 0
+                }
+              }
+            ]
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Logic/workflows', parameters('logicAppName'))]"
+          ]
+        },
+        {
+          "type": "providers/diagnosticSettings",
+          "name": "[concat('Microsoft.Insights/', parameters('diagnosticSettingName02'))]",
+          "apiVersion": "2017-05-01-preview",
+          "properties": {
+            "name": "[parameters('diagnosticSettingName02')]",
+            "storageAccountId": null,
+            "eventHubAuthorizationRuleId": null,
+            "eventHubName": null,
+            "workspaceId": "[parameters('workspaceId02')]",
+            "logs": [
+              {
+                "category": "WorkflowRuntime",
+                "enabled": true,
+                "retentionPolicy": {
+                  "days": 0,
+                  "enabled": false
+                }
+              }
+            ],
+            "metrics": [
+              {
+                "timeGrain": "PT1M",
+                "enabled": true,
+                "retentionPolicy": {
+                  "enabled": false,
+                  "days": 0
+                }
+              }
+            ]
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Logic/workflows', parameters('logicAppName'))]"
+          ]
+        }
+      ]
+    }
+  ]
+}
